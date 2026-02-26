@@ -92,7 +92,7 @@ jobs:
           UPSTAGE_API_KEY: ${{ secrets.UPSTAGE_API_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-        run: uv run pytest tests/ -v --tb=short
+        run: uv run pytest --cov=app --cov-report=term-missing tests/ -v --tb=short
 
 
   # Job 3: Comment (PR 코멘트)
