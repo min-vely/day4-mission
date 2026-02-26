@@ -94,6 +94,12 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: uv run pytest --cov=app --cov-report=term-missing tests/ -v --tb=short
 
+      # 생성된 coverage.xml 파일을 다음 Job에서 쓸 수 있도록 업로드
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
 
   # Job 3: Comment (PR 코멘트)
   comment:
@@ -103,7 +109,26 @@ jobs:
     needs: [lint, test]
     permissions:
       pull-requests: write
+      contents: read
     steps:
+      # 커버리지 파일을 가져오기 위해 체크아웃과 아티팩트 다운로드가 필요합니다.
+      - uses: actions/checkout@v4
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+
+      # 표 형태의 커버리지 리포트를 PR 댓글로 게시합니다.
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          pytest-xml-coverage-path: ./coverage.xml
+          title: Detailed Coverage Report
+          badge-title: Coverage
+          hide-badge: false
+          hide-report: false
+          create-new-comment: false # 기존 리포트 댓글을 업데이트함
+
       - name: Post Comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
